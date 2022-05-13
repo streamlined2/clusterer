@@ -1,8 +1,13 @@
+/target/
+/bin/
+.classpath
+.project
+.settings
+*.log
+*.log.*
+
 # Compiled class file
 *.class
-
-# Log file
-*.log
 
 # BlueJ files
 *.ctxt
