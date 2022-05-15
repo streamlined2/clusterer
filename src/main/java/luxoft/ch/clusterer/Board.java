@@ -1,8 +1,9 @@
-package luxoft.ch;
+package luxoft.ch.clusterer;
 
 import java.util.BitSet;
+import java.util.Optional;
 
-public class Board {
+class Board {
 
 	private final BitSet[] data;
 	private final int side;
@@ -17,8 +18,8 @@ public class Board {
 
 	public Board(boolean[][] flags) {
 		this.side = flags.length;
-		data = new BitSet[flags.length];
-		for (int row = 0; row < flags.length; row++) {
+		data = new BitSet[side];
+		for (int row = 0; row < side; row++) {
 			data[row] = new BitSet(flags[row].length);
 			for (int column = 0; column < flags[row].length; column++) {
 				if (flags[row][column]) {
@@ -30,6 +31,19 @@ public class Board {
 
 	public void set(int row, int column) {
 		data[row].set(column);
+	}
+
+	public Optional<Segment> findNextSegment(int row, int startColumn) {
+		int beginIndex = data[row].nextSetBit(startColumn);
+		if (beginIndex == -1) {
+			return Optional.empty();
+		}
+		int endIndex = data[row].nextClearBit(beginIndex);
+		if (endIndex == -1) {
+			return Optional.of(new Segment(row, beginIndex, side));
+		} else {
+			return Optional.of(new Segment(row, beginIndex, endIndex));
+		}
 	}
 
 	@Override
@@ -57,14 +71,6 @@ public class Board {
 		for (int k = count; k > 0; k--) {
 			builder.append('0');
 		}
-	}
-
-	public static void main(String... args) {
-		Board board = new Board(10);
-		for (int k = 0; k < 10; k++) {
-			board.set(k, k);
-		}
-		System.out.println(board.toString());
 	}
 
 }
