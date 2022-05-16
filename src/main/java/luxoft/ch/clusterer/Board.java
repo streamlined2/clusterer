@@ -6,27 +6,49 @@ import java.util.Optional;
 class Board {
 
 	private final BitSet[] data;
-	private final int side;
+	private final int rowCount;
+	private final int columnCount;
 
-	public Board(int side) {
-		this.side = side;
-		data = new BitSet[side];
-		for (int k = 0; k < side; k++) {
-			data[k] = new BitSet(side);
+	public Board(int rowCount, int columnCount) {
+		if (rowCount < 1 || columnCount < 1) {
+			throw new IllegalArgumentException(
+					"wrong dimension parameters %d, %d passed".formatted(rowCount, columnCount));
+		}
+		this.rowCount = rowCount;
+		this.columnCount = columnCount;
+		data = new BitSet[rowCount];
+		for (int k = 0; k < rowCount; k++) {
+			data[k] = new BitSet(columnCount);
 		}
 	}
 
 	public Board(boolean[][] flags) {
-		this.side = flags.length;
-		data = new BitSet[side];
-		for (int row = 0; row < side; row++) {
-			data[row] = new BitSet(flags[row].length);
-			for (int column = 0; column < flags[row].length; column++) {
+		if (flags.length < 1 || flags[0].length < 1) {
+			throw new IllegalArgumentException(
+					"wrong dimensions %d, %d of passed array".formatted(flags.length, flags[0].length));
+		}
+		this.rowCount = flags.length;
+		this.columnCount = flags[0].length;
+		data = new BitSet[rowCount];
+		for (int row = 0; row < rowCount; row++) {
+			if (columnCount != flags[row].length) {
+				throw new IllegalArgumentException("column count should be same for every row");
+			}
+			data[row] = new BitSet(columnCount);
+			for (int column = 0; column < columnCount; column++) {
 				if (flags[row][column]) {
 					data[row].set(column);
 				}
 			}
 		}
+	}
+
+	public int getRowCount() {
+		return rowCount;
+	}
+
+	public int getColumnCount() {
+		return columnCount;
 	}
 
 	public void set(int row, int column) {
@@ -40,7 +62,7 @@ class Board {
 		}
 		int endIndex = data[row].nextClearBit(beginIndex);
 		if (endIndex == -1) {
-			return Optional.of(new Segment(row, beginIndex, side));
+			return Optional.of(new Segment(row, beginIndex, columnCount));
 		} else {
 			return Optional.of(new Segment(row, beginIndex, endIndex));
 		}
@@ -49,12 +71,12 @@ class Board {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for (int row = 0; row < side; row++) {
+		for (int row = 0; row < rowCount; row++) {
 			int column = 0;
 			do {
 				int index = data[row].nextSetBit(column);
 				if (index == -1) {
-					addZeros(builder, side - column);
+					addZeros(builder, columnCount - column);
 					break;
 				} else {
 					addZeros(builder, index - column);

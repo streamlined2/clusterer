@@ -21,7 +21,7 @@ class ClusterList implements Iterable<Cluster> {
 	public Iterator<Cluster> iterator() {
 		return clusters.iterator();
 	}
-	
+
 	@Override
 	public String toString() {
 		StringJoiner join = new StringJoiner("\n");
