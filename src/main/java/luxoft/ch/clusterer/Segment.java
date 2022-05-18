@@ -4,10 +4,43 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-record Segment(int row, int startColumn, int endColumn) implements Comparable<Segment> {
+class Segment implements Comparable<Segment> {
 
-	public static final Comparator<Segment> BY_ROW_START_COLUMN_COMPARATOR = Comparator.comparingInt(Segment::row)
-			.thenComparingInt(Segment::startColumn);
+	public static final Comparator<Segment> BY_ROW_START_COLUMN_COMPARATOR = Comparator.comparingInt(Segment::getRow)
+			.thenComparingInt(Segment::getStartColumn);
+	public static final Comparator<Segment> BY_CLUSTER_ROW_START_COLUMN_COMPARATOR = Comparator
+			.comparingInt(Segment::getCluster).thenComparingInt(Segment::getRow).thenComparingInt(Segment::getStartColumn);
+
+	private final int row;
+	private final int startColumn;
+	private final int endColumn;
+	private int cluster;
+
+	public Segment(int row, int startColumn, int endColumn) {
+		this.row = row;
+		this.startColumn = startColumn;
+		this.endColumn = endColumn;
+	}
+
+	public int getCluster() {
+		return cluster;
+	}
+
+	public void setCluster(int cluster) {
+		this.cluster = cluster;
+	}
+
+	public int getRow() {
+		return row;
+	}
+
+	public int getStartColumn() {
+		return startColumn;
+	}
+
+	public int getEndColumn() {
+		return endColumn;
+	}
 
 	@Override
 	public int compareTo(Segment segment) {

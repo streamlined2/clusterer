@@ -15,8 +15,8 @@ public class Runner {
 		return this;
 	}
 
-	public ClusterList collectClusters(Board board) {
-		ClusterList clusterList = new ClusterList();
+	public SegmentList collectSegments(Board board) {
+		SegmentList segmentList = new SegmentList(board.getRowCount());
 		for (int row = 0; row < board.getRowCount(); row++) {
 			int startColumn = 0;
 			do {
@@ -25,10 +25,11 @@ public class Runner {
 					break;
 				}
 				Segment segment = candidateSegment.get();
-				startColumn = segment.endColumn();
+				// TODO
+				startColumn = segment.getEndColumn();
 			} while (startColumn < board.getColumnCount());
 		}
-		return clusterList;
+		return segmentList;
 	}
 
 	@Override

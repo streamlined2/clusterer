@@ -12,7 +12,7 @@ class Board {
 	public Board(int rowCount, int columnCount) {
 		if (rowCount < 1 || columnCount < 1) {
 			throw new IllegalArgumentException(
-					"wrong dimension parameters %d, %d passed".formatted(rowCount, columnCount));
+					"wrong dimension parameters %d, %d supplied".formatted(rowCount, columnCount));
 		}
 		this.rowCount = rowCount;
 		this.columnCount = columnCount;
