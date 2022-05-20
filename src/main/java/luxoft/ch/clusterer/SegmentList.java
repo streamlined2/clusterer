@@ -9,12 +9,24 @@ class SegmentList implements Iterable<Segment> {
 
 	private final List<Segment> segments;
 
+	public SegmentList() {
+		segments = new ArrayList<>();
+	}
+
 	public SegmentList(int size) {
 		segments = new ArrayList<>(size);
 	}
 
+	public void clear() {
+		segments.clear();
+	}
+
 	public void addSegment(Segment segment) {
 		segments.add(segment);
+	}
+
+	public void addSegments(SegmentList segmentList) {
+		segments.addAll(segmentList.segments);
 	}
 
 	@Override

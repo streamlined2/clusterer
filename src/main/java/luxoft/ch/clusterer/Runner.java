@@ -4,6 +4,8 @@ import java.util.Optional;
 
 public class Runner {
 
+	private static final double SATURATION = 0.3D;
+
 	private final Board board;
 
 	public Runner(int rows, int columns) {
@@ -15,10 +17,19 @@ public class Runner {
 		return this;
 	}
 
+	private static int getIinitialSize(int count) {
+		return (int) Math.round(SATURATION * count);
+	}
+
 	public SegmentList collectSegments(Board board) {
-		SegmentList segmentList = new SegmentList(board.getRowCount());
+
+		SegmentList collectedSegments = new SegmentList(board.getRowCount());
+		SegmentList previousRowSegments = new SegmentList(getIinitialSize(board.getColumnCount()));
+		SegmentList currentRowSegments = new SegmentList(getIinitialSize(board.getColumnCount()));
+
 		for (int row = 0; row < board.getRowCount(); row++) {
 			int startColumn = 0;
+			currentRowSegments.clear();
 			do {
 				Optional<Segment> candidateSegment = board.findNextSegment(row, startColumn);
 				if (candidateSegment.isEmpty()) {
@@ -27,9 +38,15 @@ public class Runner {
 				Segment segment = candidateSegment.get();
 				// TODO
 				startColumn = segment.getEndColumn();
+				currentRowSegments.addSegment(segment);// TODO set cluster number before adding segment
 			} while (startColumn < board.getColumnCount());
+			// dismantle previous row segment list
+			collectedSegments.addSegments(previousRowSegments);
+			// switch segment lists
+			previousRowSegments.clear();
+			previousRowSegments.addSegments(currentRowSegments);
 		}
-		return segmentList;
+		return collectedSegments;
 	}
 
 	@Override

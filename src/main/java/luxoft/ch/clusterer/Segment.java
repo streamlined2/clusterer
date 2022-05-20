@@ -9,7 +9,8 @@ class Segment implements Comparable<Segment> {
 	public static final Comparator<Segment> BY_ROW_START_COLUMN_COMPARATOR = Comparator.comparingInt(Segment::getRow)
 			.thenComparingInt(Segment::getStartColumn);
 	public static final Comparator<Segment> BY_CLUSTER_ROW_START_COLUMN_COMPARATOR = Comparator
-			.comparingInt(Segment::getCluster).thenComparingInt(Segment::getRow).thenComparingInt(Segment::getStartColumn);
+			.comparingInt(Segment::getCluster).thenComparingInt(Segment::getRow)
+			.thenComparingInt(Segment::getStartColumn);
 
 	private final int row;
 	private final int startColumn;
