@@ -1,4 +1,4 @@
-package luxoft.ch.clusterer;
+package luxoft.ch.cluster;
 
 import java.util.BitSet;
 import java.util.Optional;
@@ -63,9 +63,12 @@ class Board {
 		int endIndex = data[row].nextClearBit(beginIndex);
 		if (endIndex == -1) {
 			return Optional.of(new Segment(row, beginIndex, columnCount));
-		} else {
-			return Optional.of(new Segment(row, beginIndex, endIndex));
 		}
+		return Optional.of(new Segment(row, beginIndex, endIndex));
+	}
+
+	public boolean hasNoMoreSegments(int row, int startColumn) {
+		return findNextSegment(row, startColumn).isEmpty();
 	}
 
 	@Override

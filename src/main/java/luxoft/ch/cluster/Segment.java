@@ -1,4 +1,4 @@
-package luxoft.ch.clusterer;
+package luxoft.ch.cluster;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -18,6 +18,10 @@ class Segment implements Comparable<Segment> {
 	private int cluster;
 
 	public Segment(int row, int startColumn, int endColumn) {
+		if (startColumn >= endColumn) {
+			throw new IllegalArgumentException(
+					"start column %d should be less than end column %d".formatted(startColumn, endColumn));
+		}
 		this.row = row;
 		this.startColumn = startColumn;
 		this.endColumn = endColumn;
@@ -63,8 +67,8 @@ class Segment implements Comparable<Segment> {
 
 	@Override
 	public String toString() {
-		return new StringJoiner(",", "[", "]").add("row: " + row).add("start column: " + startColumn)
-				.add("end column: " + endColumn).toString();
+		return new StringJoiner(",", "[", "]").add("cluster: " + cluster).add("row: " + row)
+				.add("start column: " + startColumn).add("end column: " + endColumn).toString();
 	}
 
 }
