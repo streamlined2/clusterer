@@ -57,6 +57,10 @@ class Segment implements Comparable<Segment> {
 		return startIndex <= index && index < endIndex;
 	}
 
+	public int getCellCount() {
+		return endColumn - startColumn;
+	}
+
 	@Override
 	public int compareTo(Segment segment) {
 		return BY_ROW_START_COLUMN_COMPARATOR.compare(this, segment);

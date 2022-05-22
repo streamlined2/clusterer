@@ -41,11 +41,11 @@ class Board {
 	}
 
 	public Optional<Segment> findNextSegment(int row, int startColumn) {
-		int beginIndex = data[row].nextSetBit(startColumn);
+		final int beginIndex = data[row].nextSetBit(startColumn);
 		if (beginIndex == -1) {
 			return Optional.empty();
 		}
-		int endIndex = data[row].nextClearBit(beginIndex);
+		final int endIndex = data[row].nextClearBit(beginIndex);
 		if (endIndex == -1) {
 			return Optional.of(new Segment(row, beginIndex, columnCount));
 		}

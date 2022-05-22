@@ -9,7 +9,7 @@ class ClusterImpl implements Cluster {
 	public ClusterImpl(int number, int width) {
 		this.number = number;
 		this.width = width;
-		segments = new SegmentList();
+		this.segments = new SegmentList();
 	}
 
 	public int getNumber() {
@@ -45,7 +45,7 @@ class ClusterImpl implements Cluster {
 
 	@Override
 	public int getCellsCount() {
-		return segments.getSize();
+		return segments.getCellCount();
 	}
 	
 	@Override

@@ -24,7 +24,7 @@ class SegmentList implements Iterable<Segment> {
 	public void clear() {
 		segments.clear();
 	}
-	
+
 	public int getSize() {
 		return segments.size();
 	}
@@ -49,12 +49,20 @@ class SegmentList implements Iterable<Segment> {
 		return segments.remove();
 	}
 
+	public int getCellCount() {
+		int count = 0;
+		for (var segment : this) {
+			count += segment.getCellCount();
+		}
+		return count;
+	}
+
 	public void copySegments(SegmentList segmentList) {
 		clear();
 		addSegments(segmentList);
 	}
 
-	public void moveToAnotherCluster(int originalClusterNumber, int newClusterNumber) {//TODO must be optimized
+	public void moveToAnotherCluster(int originalClusterNumber, int newClusterNumber) {// TODO must be optimized
 		for (var segment : segments) {
 			if (segment.getCluster() == originalClusterNumber) {
 				segment.setCluster(newClusterNumber);

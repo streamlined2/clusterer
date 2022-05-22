@@ -8,23 +8,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
 
-public class Runner implements ClusterFinder {
+public class ClusterFinderImpl implements ClusterFinder {
 
 	private static final double SATURATION_DEGREE = 0.35D;
 
 	private Board board;
 	private int clusterNumber;
 
-	private Runner() {
+	public ClusterFinderImpl() {
 		clusterNumber = 1;
 	}
 
-	public Runner(int rows, int columns) {
+	public ClusterFinderImpl(int rows, int columns) {
 		this();
 		board = new Board(rows, columns);
 	}
 
-	public Runner(FieldGenerator fieldGenerator) {
+	public ClusterFinderImpl(FieldGenerator fieldGenerator) {
 		this();
 		initialize(fieldGenerator);
 	}
@@ -37,7 +37,7 @@ public class Runner implements ClusterFinder {
 		}
 	}
 
-	public Runner mark(int row, int column) {
+	public ClusterFinderImpl mark(int row, int column) {
 		board.set(row, column);
 		return this;
 	}
@@ -77,7 +77,7 @@ public class Runner implements ClusterFinder {
 			previousRowSegments.copySegments(currentRowSegments);
 			currentRowSegments.clear();
 		}
-		
+
 		collectedSegments.addSegments(previousRowSegments);
 
 		return collectedSegments;
@@ -102,9 +102,11 @@ public class Runner implements ClusterFinder {
 
 		int newCombinedClusterNumber = NO_CLUSTER_NUMBER_ASSIGNED;
 
+		Optional<Segment> previousProbableCandidate = Optional.empty();
 		do {
 			Optional<Segment> probableCandidate = previousRowSegments.peek();
-			if (probableCandidate.isEmpty() || commonRangeEndColumn <= probableCandidate.get().getStartColumn()) {
+			if (probableCandidate.isEmpty() || commonRangeEndColumn <= probableCandidate.get().getStartColumn()
+					|| probableCandidate.equals(previousProbableCandidate)) {
 				break;
 			}
 			Segment candidate = probableCandidate.get();
@@ -122,6 +124,7 @@ public class Runner implements ClusterFinder {
 					|| board.hasNoMoreSegments(segment.getRow(), segment.getEndColumn())) {
 				collectedSegments.addSegment(previousRowSegments.remove());
 			}
+			previousProbableCandidate = probableCandidate;
 		} while (!previousRowSegments.isEmpty());
 
 		if (newCombinedClusterNumber == NO_CLUSTER_NUMBER_ASSIGNED) {
@@ -159,20 +162,20 @@ public class Runner implements ClusterFinder {
 	}
 
 	public static void main(String[] args) {
-		Runner runner = new Runner(7, 7).mark(1, 1).mark(2, 1).mark(3, 2).mark(2, 4).mark(3, 6).mark(4, 5).mark(5, 4)
-				.mark(5, 5);
+		ClusterFinderImpl runner = new ClusterFinderImpl(7, 7).mark(1, 1).mark(2, 1).mark(3, 2).mark(2, 4).mark(3, 6)
+				.mark(4, 5).mark(5, 4).mark(5, 5);
 		System.out.printf("Original board:%n%n%s%n", runner.toString());
 		System.out.printf("List of segments:%n%s%n%n",
 				runner.getSegmentsSortedBy(Segment.BY_CLUSTER_ROW_START_COLUMN_COMPARATOR));
 
-		Runner runner3 = new Runner(7, 7).mark(0, 0).mark(0, 2).mark(0, 6).mark(2, 0).mark(2, 1).mark(3, 1).mark(3, 4)
-				.mark(5, 2).mark(6, 2).mark(6, 4).mark(6, 5);
+		ClusterFinderImpl runner3 = new ClusterFinderImpl(7, 7).mark(0, 0).mark(0, 2).mark(0, 6).mark(2, 0).mark(2, 1)
+				.mark(3, 1).mark(3, 4).mark(5, 2).mark(6, 2).mark(6, 4).mark(6, 5);
 		System.out.printf("Original board:%n%n%s%n", runner3.toString());
 		System.out.printf("List of segments:%n%s%n%n",
 				runner3.getSegmentsSortedBy(Segment.BY_CLUSTER_ROW_START_COLUMN_COMPARATOR));
 
 		FieldGenerator fieldGenerator = new FieldGenerator(7, 7, 30);
-		Runner runner2 = new Runner();
+		ClusterFinderImpl runner2 = new ClusterFinderImpl();
 		List<Cluster> clusters = runner2.findClusters(fieldGenerator);
 		System.out.printf("Original board:%n%n%s%n", runner2.toString());
 		System.out.printf("Clusters:%n");
