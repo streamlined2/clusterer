@@ -22,27 +22,6 @@ class Board {
 		}
 	}
 
-	public Board(boolean[][] flags) {
-		if (flags.length < 1 || flags[0].length < 1) {
-			throw new IllegalArgumentException(
-					"wrong dimensions %d, %d of passed array".formatted(flags.length, flags[0].length));
-		}
-		this.rowCount = flags.length;
-		this.columnCount = flags[0].length;
-		data = new BitSet[rowCount];
-		for (int row = 0; row < rowCount; row++) {
-			if (columnCount != flags[row].length) {
-				throw new IllegalArgumentException("column count should be same for every row");
-			}
-			data[row] = new BitSet(columnCount);
-			for (int column = 0; column < columnCount; column++) {
-				if (flags[row][column]) {
-					data[row].set(column);
-				}
-			}
-		}
-	}
-
 	public int getRowCount() {
 		return rowCount;
 	}
@@ -53,6 +32,12 @@ class Board {
 
 	public void set(int row, int column) {
 		data[row].set(column);
+	}
+
+	public void set(int index) {
+		final int row = index / columnCount;
+		final int column = index % columnCount;
+		set(row, column);
 	}
 
 	public Optional<Segment> findNextSegment(int row, int startColumn) {

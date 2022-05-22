@@ -1,18 +1,40 @@
 package luxoft.ch.cluster;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
 
-public class Runner {
+public class Runner implements ClusterFinder {
 
-	private static final double SATURATION = 0.35D;
+	private static final double SATURATION_DEGREE = 0.35D;
 
-	private final Board board;
+	private Board board;
 	private int clusterNumber;
 
-	public Runner(int rows, int columns) {
-		board = new Board(rows, columns);
+	private Runner() {
 		clusterNumber = 1;
+	}
+
+	public Runner(int rows, int columns) {
+		this();
+		board = new Board(rows, columns);
+	}
+
+	public Runner(FieldGenerator fieldGenerator) {
+		this();
+		initialize(fieldGenerator);
+	}
+
+	private void initialize(FieldGenerator fieldGenerator) {
+		board = new Board(fieldGenerator.getHeight(), fieldGenerator.getWidth());
+		int index;
+		while ((index = fieldGenerator.getNextIndex()) != -1) {
+			board.set(index);
+		}
 	}
 
 	public Runner mark(int row, int column) {
@@ -24,15 +46,12 @@ public class Runner {
 		return clusterNumber++;
 	}
 
-	private int getRowSegmentsPrognosedCount() {
-		return (int) Math.round(SATURATION * board.getColumnCount());
+	public SortedSet<Segment> getSegmentsSortedBy(Comparator<Segment> comparator) {
+		SegmentList segments = collectSegments();
+		return segments.getSortedBy(comparator);
 	}
 
-	private int getTotalSegmentsPrognosedCount() {
-		return board.getRowCount() * getRowSegmentsPrognosedCount();
-	}
-
-	public SortedSet<Segment> collectSegments() {
+	public SegmentList collectSegments() {
 
 		SegmentList collectedSegments = new SegmentList(getTotalSegmentsPrognosedCount());
 		SegmentList previousRowSegments = new SegmentList(getRowSegmentsPrognosedCount());
@@ -47,7 +66,7 @@ public class Runner {
 					break;
 				}
 				Segment segment = candidateSegment.get();
-				int newCombinedClusterNumber = mergeAdjacentSegmentsInOneCluster(segment, previousRowSegments,
+				final int newCombinedClusterNumber = mergeAdjacentSegmentsInOneCluster(segment, previousRowSegments,
 						collectedSegments);
 				segment.setCluster(newCombinedClusterNumber);
 				currentRowSegments.addSegment(segment);
@@ -59,7 +78,17 @@ public class Runner {
 			currentRowSegments.clear();
 		}
 		
-		return collectedSegments.getSortedBy(Segment.BY_CLUSTER_ROW_START_COLUMN_COMPARATOR);
+		collectedSegments.addSegments(previousRowSegments);
+
+		return collectedSegments;
+	}
+
+	private int getRowSegmentsPrognosedCount() {
+		return (int) Math.round(SATURATION_DEGREE * board.getColumnCount());
+	}
+
+	private int getTotalSegmentsPrognosedCount() {
+		return board.getRowCount() * getRowSegmentsPrognosedCount();
 	}
 
 	private static final int NO_CLUSTER_NUMBER_ASSIGNED = -1;
@@ -85,8 +114,8 @@ public class Runner {
 					newCombinedClusterNumber = candidateClusterNumber;
 				}
 				if (newCombinedClusterNumber != candidateClusterNumber) {
-					previousRowSegments.changeCluster(candidateClusterNumber, newCombinedClusterNumber);
-					collectedSegments.changeCluster(candidateClusterNumber, newCombinedClusterNumber);
+					previousRowSegments.moveToAnotherCluster(candidateClusterNumber, newCombinedClusterNumber);
+					collectedSegments.moveToAnotherCluster(candidateClusterNumber, newCombinedClusterNumber);
 				}
 			}
 			if (candidate.getEndColumn() < commonRangeEndColumn
@@ -110,11 +139,45 @@ public class Runner {
 		return board.toString();
 	}
 
+	@Override
+	public List<Cluster> findClusters(FieldGenerator fieldGenerator) {
+		initialize(fieldGenerator);
+		SegmentList segments = collectSegments();
+		Map<Integer, ClusterImpl> map = new HashMap<>();
+		while (!segments.isEmpty()) {
+			Segment segment = segments.remove();
+			ClusterImpl cluster = map.get(segment.getCluster());
+			if (cluster == null) {
+				cluster = new ClusterImpl(segment.getCluster(), fieldGenerator.getWidth());
+			}
+			cluster.addSegment(segment);
+			map.put(segment.getCluster(), cluster);
+		}
+		List<Cluster> list = new ArrayList<>(map.size());
+		list.addAll(map.values());
+		return list;
+	}
+
 	public static void main(String[] args) {
-		Runner runner = new Runner(7, 7);
-		runner.mark(1, 1).mark(2, 1).mark(3, 2).mark(2, 4).mark(3, 6).mark(4, 5).mark(5, 4).mark(5, 5);
+		Runner runner = new Runner(7, 7).mark(1, 1).mark(2, 1).mark(3, 2).mark(2, 4).mark(3, 6).mark(4, 5).mark(5, 4)
+				.mark(5, 5);
 		System.out.printf("Original board:%n%n%s%n", runner.toString());
-		System.out.printf("List of segments:%n%s%n", runner.collectSegments());
+		System.out.printf("List of segments:%n%s%n%n",
+				runner.getSegmentsSortedBy(Segment.BY_CLUSTER_ROW_START_COLUMN_COMPARATOR));
+
+		Runner runner3 = new Runner(7, 7).mark(0, 0).mark(0, 2).mark(0, 6).mark(2, 0).mark(2, 1).mark(3, 1).mark(3, 4)
+				.mark(5, 2).mark(6, 2).mark(6, 4).mark(6, 5);
+		System.out.printf("Original board:%n%n%s%n", runner3.toString());
+		System.out.printf("List of segments:%n%s%n%n",
+				runner3.getSegmentsSortedBy(Segment.BY_CLUSTER_ROW_START_COLUMN_COMPARATOR));
+
+		FieldGenerator fieldGenerator = new FieldGenerator(7, 7, 30);
+		Runner runner2 = new Runner();
+		List<Cluster> clusters = runner2.findClusters(fieldGenerator);
+		System.out.printf("Original board:%n%n%s%n", runner2.toString());
+		System.out.printf("Clusters:%n");
+		clusters.forEach(System.out::println);
+
 	}
 
 }

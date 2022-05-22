@@ -17,12 +17,16 @@ class SegmentList implements Iterable<Segment> {
 		segments = new ArrayDeque<>();
 	}
 
-	public SegmentList(int size) {
-		segments = new ArrayDeque<>(size);
+	public SegmentList(int capacity) {
+		segments = new ArrayDeque<>(capacity);
 	}
 
 	public void clear() {
 		segments.clear();
+	}
+	
+	public int getSize() {
+		return segments.size();
 	}
 
 	public void addSegment(Segment segment) {
@@ -50,8 +54,7 @@ class SegmentList implements Iterable<Segment> {
 		addSegments(segmentList);
 	}
 
-	// TODO needs optimization
-	public void changeCluster(int originalClusterNumber, int newClusterNumber) {
+	public void moveToAnotherCluster(int originalClusterNumber, int newClusterNumber) {//TODO must be optimized
 		for (var segment : segments) {
 			if (segment.getCluster() == originalClusterNumber) {
 				segment.setCluster(newClusterNumber);

@@ -47,6 +47,16 @@ class Segment implements Comparable<Segment> {
 		return endColumn;
 	}
 
+	public boolean contains(int row, int column) {
+		return this.row == row && startColumn <= column && column < endColumn;
+	}
+
+	public boolean containsIndex(int index, int width) {
+		int startIndex = row * width + startColumn;
+		int endIndex = row * width + endColumn;
+		return startIndex <= index && index < endIndex;
+	}
+
 	@Override
 	public int compareTo(Segment segment) {
 		return BY_ROW_START_COLUMN_COMPARATOR.compare(this, segment);
