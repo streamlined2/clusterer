@@ -1,5 +1,8 @@
 package luxoft.ch.cluster;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -66,8 +69,8 @@ public class ClusterFinderImpl implements ClusterFinder {
 					break;
 				}
 				Segment segment = candidateSegment.get();
-				final int newCombinedClusterNumber = mergeAdjacentSegmentsInOneCluster(segment, previousRowSegments,
-						collectedSegments);
+				final int newCombinedClusterNumber = mergeAdjacentSegmentsInOneCluster(segment, currentRowSegments,
+						previousRowSegments, collectedSegments);
 				segment.setCluster(newCombinedClusterNumber);
 				currentRowSegments.addSegment(segment);
 				startColumn = segment.getEndColumn();
@@ -93,8 +96,8 @@ public class ClusterFinderImpl implements ClusterFinder {
 
 	private static final int NO_CLUSTER_NUMBER_ASSIGNED = -1;
 
-	private int mergeAdjacentSegmentsInOneCluster(Segment segment, SegmentList previousRowSegments,
-			SegmentList collectedSegments) {
+	private int mergeAdjacentSegmentsInOneCluster(Segment segment, SegmentList currentRowSegments,
+			SegmentList previousRowSegments, SegmentList collectedSegments) {
 
 		final int commonRangeStartColumn = segment.getStartColumn() == 0 ? 0 : segment.getStartColumn() - 1;
 		final int commonRangeEndColumn = segment.getEndColumn() < board.getColumnCount() ? segment.getEndColumn() + 1
@@ -116,6 +119,7 @@ public class ClusterFinderImpl implements ClusterFinder {
 					newCombinedClusterNumber = candidateClusterNumber;
 				}
 				if (newCombinedClusterNumber != candidateClusterNumber) {
+					currentRowSegments.moveToAnotherCluster(candidateClusterNumber, newCombinedClusterNumber);
 					previousRowSegments.moveToAnotherCluster(candidateClusterNumber, newCombinedClusterNumber);
 					collectedSegments.moveToAnotherCluster(candidateClusterNumber, newCombinedClusterNumber);
 				}
@@ -143,7 +147,7 @@ public class ClusterFinderImpl implements ClusterFinder {
 	}
 
 	@Override
-	public List<Cluster> findClusters(FieldGenerator fieldGenerator) {
+	public List<Cluster> findClusters(FieldGenerator fieldGenerator) {// TODO must be optimized
 		initialize(fieldGenerator);
 		SegmentList segments = collectSegments();
 		Map<Integer, ClusterImpl> map = new HashMap<>();
@@ -161,7 +165,27 @@ public class ClusterFinderImpl implements ClusterFinder {
 		return list;
 	}
 
-	public static void main(String[] args) {
+	private static void printClusters(List<Cluster> clusters, FieldGenerator fg, PrintWriter p) {
+		int[][] matrix = new int[fg.getHeight()][fg.getWidth()];
+		for (var cluster : clusters) {
+			ClusterImpl cl = (ClusterImpl) cluster;
+			int clusterNumber = cl.getNumber();
+			for (var segment : cl) {
+				for (int column = segment.getStartColumn(); column < segment.getEndColumn(); column++) {
+					matrix[segment.getRow()][column] = clusterNumber;
+				}
+			}
+		}
+		for (int row = 0; row < matrix.length; row++) {
+			StringBuilder b = new StringBuilder();
+			for (int column = 0; column < matrix[row].length; column++) {
+				b.append("%5d".formatted(matrix[row][column]));
+			}
+			p.println(b.toString());
+		}
+	}
+
+	public static void main(String[] args) throws FileNotFoundException {
 		ClusterFinderImpl runner = new ClusterFinderImpl(7, 7).mark(1, 1).mark(2, 1).mark(3, 2).mark(2, 4).mark(3, 6)
 				.mark(4, 5).mark(5, 4).mark(5, 5);
 		System.out.printf("Original board:%n%n%s%n", runner.toString());
@@ -180,7 +204,15 @@ public class ClusterFinderImpl implements ClusterFinder {
 		System.out.printf("Original board:%n%n%s%n", runner2.toString());
 		System.out.printf("Clusters:%n");
 		clusters.forEach(System.out::println);
+		System.out.println();
 
+		int size = 256;
+		final FieldGenerator fg = new FieldGenerator(size, size, 30);
+		ClusterFinder finder = new ClusterFinderImpl();
+		List<Cluster> clusters2 = finder.findClusters(fg);
+		try (PrintWriter writer = new PrintWriter(new File("data.txt"))) {
+			printClusters(clusters2, fg, writer);
+		}
 	}
 
 }

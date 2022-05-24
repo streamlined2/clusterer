@@ -52,8 +52,9 @@ class Segment implements Comparable<Segment> {
 	}
 
 	public boolean containsIndex(int index, int width) {
-		int startIndex = row * width + startColumn;
-		int endIndex = row * width + endColumn;
+		final int production = row * width;
+		final int startIndex = production + startColumn;
+		final int endIndex = production + endColumn;
 		return startIndex <= index && index < endIndex;
 	}
 

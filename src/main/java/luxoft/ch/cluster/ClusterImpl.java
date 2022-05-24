@@ -1,6 +1,8 @@
 package luxoft.ch.cluster;
 
-class ClusterImpl implements Cluster {
+import java.util.Iterator;
+
+class ClusterImpl implements Cluster, Iterable<Segment> {
 
 	private final int number;
 	private final SegmentList segments;
@@ -51,6 +53,11 @@ class ClusterImpl implements Cluster {
 	@Override
 	public String toString() {
 		return "%d: %s".formatted(number, segments.toString());
+	}
+
+	@Override
+	public Iterator<Segment> iterator() {
+		return segments.iterator();
 	}
 
 }
